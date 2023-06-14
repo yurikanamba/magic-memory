@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import SingleCard from "./components/singleCard";
 
 const images = [
-  { src: "/img/helmet-1.png" },
-  { src: "/img/potion-1.png" },
-  { src: "/img/ring-1.png" },
-  { src: "/img/scroll-1.png" },
-  { src: "/img/shield-1.png" },
-  { src: "/img/sword-1.png" },
+  { src: "/img/helmet-1.png", matched: false },
+  { src: "/img/potion-1.png", matched: false },
+  { src: "/img/ring-1.png", matched: false },
+  { src: "/img/scroll-1.png", matched: false },
+  { src: "/img/shield-1.png", matched: false },
+  { src: "/img/sword-1.png", matched: false },
 ];
 
 function App() {
@@ -21,10 +21,13 @@ function App() {
   useEffect(() => {
     if (choiceTwo) {
       compareChoices();
-      setTurns((currentTurns) => currentTurns++);
-      resetChoices();
+      setTurns((currentTurns) => (currentTurns = currentTurns + 1));
     }
   }, [choiceTwo]);
+
+  useEffect(() => {
+    shuffleCards();
+  }, []);
 
   function shuffleCards() {
     const shuffledCards = [...images, ...images]
@@ -40,7 +43,22 @@ function App() {
   }
 
   function compareChoices() {
-    return choiceOne.src === choiceTwo.src;
+    if (choiceOne.src === choiceTwo.src) {
+      setCards((currentCards) => {
+        return currentCards.map((originalCard) => {
+          return originalCard.src === choiceOne.src
+            ? { ...originalCard, matched: true }
+            : originalCard;
+        });
+      });
+      resetChoices();
+    } else {
+      setTimeout(resetChoices, 500);
+    }
+  }
+
+  function flippedConditions(card) {
+    return Boolean(card === choiceOne || card === choiceTwo || card.matched);
   }
 
   function resetChoices() {
@@ -59,9 +77,11 @@ function App() {
             key={card.id}
             setChoices={setChoices}
             choiceTwo={choiceTwo}
+            flippedConditions={flippedConditions(card)}
           />
         ))}
       </div>
+      <p>Turns: {turns}</p>
     </div>
   );
 }
